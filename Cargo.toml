@@ -10,3 +10,4 @@ tokio = { version = "1.3", features = ["full"] }
 tokio-util = { version = "0.7" }
 anyhow = "1.0.68"
 chrono = "0.4.31"
+async-trait="0.1.63"
