@@ -123,7 +123,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn get_next_char(&mut self) -> Option<(usize, char)> {
-        self.chars.clone().next()
+        self.chars.next()
     }
 
     fn eat(&mut self, target_char: char) -> bool {
@@ -345,6 +345,10 @@ impl<'a> Tokenizer<'a> {
     fn peek_next(&mut self) -> Option<(usize, char)> {
         self.chars.clone().clone().next()
     }
+
+    fn is_last_char(&mut self) -> bool {
+        self.chars.clone().next().is_none()
+    }
 }
 
 impl MaybeString {
@@ -394,5 +398,54 @@ impl<'a> Token<'a> {
             Token::Colon => "a colon",
             Token::Plus => "a plus",
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Span, Token, Tokenizer};
+
+    #[test]
+    fn should_parse_toml() {
+        let toml_file_content = r#"
+    title = "TOML Example"
+
+    [owner]
+    name = "Tom Preston-Werner"
+    dob = 1979-05-27T07:32:00-08:00
+    
+    [database]
+    enabled = true
+    ports = [ 8000, 8001, 8002 ]
+    data = [ ["delta", "phi"], [3.14] ]
+    temp_targets = { cpu = 79.5, case = 72.0 }
+    
+    [servers]
+    
+    [servers.alpha]
+    ip = "10.0.0.1"
+    role = "frontend"
+    
+    [servers.beta]
+    ip = "10.0.0.2"
+    role = "backend"
+    "#;
+
+        let mut tokenizer = Tokenizer::new(toml_file_content);
+        let mut tokens: Vec<(Span, Token<'_>)> = vec![];
+
+        while !tokenizer.is_last_char() {
+            let token = tokenizer.tokenize();
+
+            match token {
+                Ok(t) => match t {
+                    Some(value) => tokens.push(value),
+                    None => {}
+                },
+                Err(_) => {}
+            }
+        }
+
+        println!("{:?}", tokens);
     }
 }
